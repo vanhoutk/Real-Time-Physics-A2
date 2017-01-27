@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset><contributor><author></author><authoring_tool>FBX COLLADA exporter</authoring_tool><comments></comments></contributor><created>2017-01-24T15:00:41Z</created><keywords></keywords><modified>2017-01-24T15:00:41Z</modified><revision></revision><subject></subject><title></title><unit meter="0.010000" name="centimeter"></unit><up_axis>Y_UP</up_axis></asset>
+  <library_materials>
+    <material id="lambert2" name="lambert2">
+      <instance_effect url="#lambert2-fx"/>
+    </material>
+  </library_materials>
+  <library_effects>
+    <effect id="lambert2-fx" name="lambert2">
+      <profile_COMMON>
+        <technique sid="standard">
+          <lambert>
+            <emission>
+              <color sid="emission">0.000000  0.000000 0.000000 1.000000</color>
+            </emission>
+            <ambient>
+              <color sid="ambient">0.000000  0.000000 0.000000 1.000000</color>
+            </ambient>
+            <diffuse>
+              <color sid="diffuse">0.400000  0.400000 0.400000 1.000000</color>
+            </diffuse>
+            <transparent opaque="RGB_ZERO">
+              <color sid="transparent">0.000000  0.000000 0.000000 1.000000</color>
+            </transparent>
+            <transparency>
+              <float sid="transparency">1.000000</float>
+            </transparency>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_geometries>
+    <geometry id="pSphere1-lib" name="pSphere1Mesh">
+      <mesh>
+        <source id="pSphere1-POSITION">
+          <float_array id="pSphere1-POSITION-array" count="81">
+-0.672499 -0.707107 -0.218508
+-0.218508 -0.707107 0.672499
+0.000000 -1.000000 0.000000
+0.672499 -0.707107 0.218508
+0.559017 -0.809017 -0.181636
+0.095492 -0.951057 -0.293893
+-0.769421 -0.587785 0.250000
+0.847398 -0.453991 -0.275336
+0.275336 -0.453991 -0.847398
+-0.580549 -0.156434 -0.799057
+0.309017 0.000000 0.951057
+0.939348 -0.156434 -0.305213
+-0.799057 -0.156434 0.580549
+0.799057 -0.156434 0.580549
+-0.951057 0.000000 -0.309017
+0.000000 0.453991 -0.891007
+-0.309017 0.000000 0.951057
+0.672499 0.707107 0.218508
+0.847398 0.453991 -0.275336
+0.523721 0.453991 -0.720840
+-0.523721 0.453991 -0.720840
+-0.580549 0.156434 0.799057
+0.475528 0.587785 0.654509
+-0.672499 0.707107 0.218508
+0.559017 0.809017 -0.181636
+0.095491 0.951057 0.293893
+0.000000 1.000000 0.000000
+</float_array>
+          <technique_common>
+            <accessor source="#pSphere1-POSITION-array" count="27" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="pSphere1-Normal0">
+          <float_array id="pSphere1-Normal0-array" count="81">
+-0.848674 -0.448937 -0.279657
+-0.003716 -0.448937 0.893556
+0.415192 -0.700559 0.580373
+0.848674 -0.448937 0.279658
+0.680269 -0.700559 -0.215525
+-0.246948 -0.581722 -0.774994
+-0.987985 -0.154547 -0.001330
+0.987985 -0.154547 0.001331
+0.304039 0.154547 -0.940040
+-0.296718 0.305397 -0.904815
+0.296718 0.305397 0.904815
+0.809017 0.000000 -0.587785
+-0.904816 0.305397 0.296718
+0.581799 0.154547 0.798514
+-0.952222 0.305397 0.002592
+0.138754 0.885333 -0.443772
+0.004625 0.581722 0.813375
+0.162626 0.985442 0.049557
+0.813375 0.581722 -0.004624
+0.474347 0.581722 -0.660752
+-0.189521 0.802583 -0.565635
+-0.474347 0.581722 0.660753
+0.423666 0.700559 0.574216
+-0.479386 0.802583 0.355036
+0.321790 0.946801 -0.004317
+0.192636 0.946801 0.257796
+0.169981 0.985442 -0.003123
+</float_array>
+          <technique_common>
+            <accessor source="#pSphere1-Normal0-array" count="27" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="pSphere1-UV0">
+          <float_array id="pSphere1-UV0-array" count="78">
+0.400000 0.250000
+0.650000 0.250000
+0.775000 0.000000
+0.900000 0.250000
+0.000000 0.200000
+0.150000 0.100000
+0.500000 0.300000
+1.000000 0.200000
+0.000000 0.350000
+0.150000 0.350000
+0.300000 0.450000
+0.750000 0.500000
+1.000000 0.350000
+0.000000 0.450000
+0.550000 0.450000
+0.850000 0.450000
+0.400000 0.500000
+1.000000 0.450000
+0.200000 0.650000
+0.650000 0.500000
+0.900000 0.750000
+0.000000 0.650000
+0.100000 0.650000
+0.300000 0.650000
+0.600000 0.550000
+0.800000 0.700000
+1.000000 0.650000
+0.500000 0.750000
+0.000000 0.800000
+0.750000 0.900000
+1.000000 0.800000
+0.325000 1.000000
+0.625000 1.000000
+0.975000 1.000000
+0.125000 0.000000
+0.375000 0.000000
+0.575000 0.000000
+0.975000 0.000000
+0.775000 1.000000
+</float_array>
+          <technique_common>
+            <accessor source="#pSphere1-UV0-array" count="39" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="pSphere1-VERTEX">
+          <input semantic="POSITION" source="#pSphere1-POSITION"/>
+          <input semantic="NORMAL" source="#pSphere1-Normal0"/>
+        </vertices>
+        <triangles count="50" material="lambert2"><input semantic="VERTEX" offset="0" source="#pSphere1-VERTEX"/><input semantic="TEXCOORD" offset="1" set="0" source="#pSphere1-UV0"/><p> 0 0 2 36 1 1 0 0 1 1 6 6 3 3 2 37 4 7 4 4 2 34 5 5 5 5 2 35 0 0 1 1 2 2 10 11 4 4 5 5 7 8 7 8 5 5 8 9 5 5 0 0 9 10 2 2 3 3 10 11 3 3 4 7 7 12 8 9 5 5 9 10 7 8 8 9 11 13 9 10 0 0 14 16 0 0 6 6 14 16 6 6 1 1 12 14 12 14 1 1 16 19 16 19 1 1 10 11 10 11 3 3 13 15 3 3 7 12 13 15 11 13 8 9 19 22 6 6 12 14 14 16 12 14 16 19 21 24 13 15 7 12 18 26 7 12 11 17 18 26 18 21 11 13 19 22 8 9 9 10 15 18 9 10 14 16 20 23 13 15 18 26 17 20 8 9 15 18 19 22 10 11 13 15 22 25 13 15 17 20 22 25 15 18 9 10 20 23 20 23 14 16 23 27 14 16 12 14 23 27 12 14 21 24 23 27 16 19 10 11 22 25 21 24 16 19 25 29 18 21 19 22 24 28 24 28 19 22 15 18 23 27 21 24 25 29 16 19 22 25 25 29 17 20 18 26 24 30 20 23 23 27 26 31 22 25 17 20 25 29 15 18 20 23 26 31 23 27 25 29 26 32 15 18 26 31 24 28 25 29 17 20 26 38 17 20 24 30 26 33</p></triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="particle_reduced" name="particle_reduced">
+      <node name="pSphere1" id="pSphere1" sid="pSphere1"><matrix sid="matrix">1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 0.000000 1.000000</matrix><instance_geometry url="#pSphere1-lib"><bind_material><technique_common><instance_material symbol="lambert2" target="#lambert2"/></technique_common></bind_material></instance_geometry><extra><technique profile="FCOLLADA"><visibility>1.000000</visibility></technique></extra></node>
+      <extra><technique profile="MAX3D"><frame_rate>24.000000</frame_rate></technique><technique profile="FCOLLADA"><start_time>0.041667</start_time><end_time>8.333333</end_time></technique></extra>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#particle_reduced"></instance_visual_scene>
+  </scene>
+</COLLADA>

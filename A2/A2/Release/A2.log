@@ -1,0 +1,24 @@
+﻿  Main.cpp
+e:\users\kris\documents\college\fifth year onedrive\onedrive\fifth year - computers\cs7057 - real-time physics\assignments\code\real-time-physics-a2\a2\a2\Antons_maths_funcs.h(480): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+e:\users\kris\documents\college\fifth year onedrive\onedrive\fifth year - computers\cs7057 - real-time physics\assignments\code\real-time-physics-a2\a2\a2\Antons_maths_funcs.h(484): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+e:\users\kris\documents\college\fifth year onedrive\onedrive\fifth year - computers\cs7057 - real-time physics\assignments\code\real-time-physics-a2\a2\a2\Antons_maths_funcs.h(679): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+e:\users\kris\documents\college\fifth year onedrive\onedrive\fifth year - computers\cs7057 - real-time physics\assignments\code\real-time-physics-a2\a2\a2\Antons_maths_funcs.h(691): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+e:\users\kris\documents\college\fifth year onedrive\onedrive\fifth year - computers\cs7057 - real-time physics\assignments\code\real-time-physics-a2\a2\a2\Antons_maths_funcs.h(703): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+e:\users\kris\documents\college\fifth year onedrive\onedrive\fifth year - computers\cs7057 - real-time physics\assignments\code\real-time-physics-a2\a2\a2\Antons_maths_funcs.h(751): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+e:\users\kris\documents\college\fifth year onedrive\onedrive\fifth year - computers\cs7057 - real-time physics\assignments\code\real-time-physics-a2\a2\a2\Antons_maths_funcs.h(768): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+e:\users\kris\documents\college\fifth year onedrive\onedrive\fifth year - computers\cs7057 - real-time physics\assignments\code\real-time-physics-a2\a2\a2\Antons_maths_funcs.h(769): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+e:\users\kris\documents\college\fifth year onedrive\onedrive\fifth year - computers\cs7057 - real-time physics\assignments\code\real-time-physics-a2\a2\a2\Antons_maths_funcs.h(770): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+e:\users\kris\documents\college\fifth year onedrive\onedrive\fifth year - computers\cs7057 - real-time physics\assignments\code\real-time-physics-a2\a2\a2\Antons_maths_funcs.h(771): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+e:\users\kris\documents\college\fifth year onedrive\onedrive\fifth year - computers\cs7057 - real-time physics\assignments\code\real-time-physics-a2\a2\a2\Antons_maths_funcs.h(776): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+e:\users\kris\documents\college\fifth year onedrive\onedrive\fifth year - computers\cs7057 - real-time physics\assignments\code\real-time-physics-a2\a2\a2\Camera.h(129): warning C4244: 'return': conversion from 'double' to 'GLfloat', possible loss of data
+Main.cpp(285): warning C4244: '=': conversion from 'int' to 'GLfloat', possible loss of data
+Main.cpp(286): warning C4244: '=': conversion from 'int' to 'GLfloat', possible loss of data
+Main.cpp(293): warning C4244: '=': conversion from 'int' to 'GLfloat', possible loss of data
+Main.cpp(294): warning C4244: '=': conversion from 'int' to 'GLfloat', possible loss of data
+Main.cpp(308): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  Generating code
+  4 of 541 functions ( 0.7%) were compiled, the rest were copied from previous compilation.
+    1 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  A2.vcxproj -> E:\Users\Kris\Documents\College\Fifth Year OneDrive\OneDrive\Fifth Year - Computers\CS7057 - Real-Time Physics\Assignments\Code\Real-Time-Physics-A2\A2\Release\A2.exe

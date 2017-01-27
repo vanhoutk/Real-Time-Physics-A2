@@ -1,0 +1,11 @@
+#version 420
+
+in vec2 TexCoords;
+out vec4 colour;
+
+uniform sampler2D texture_diffuse1;
+
+void main()
+{
+    colour = vec4(texture(texture_diffuse1, TexCoords));
+}  
