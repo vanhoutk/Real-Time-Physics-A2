@@ -140,13 +140,13 @@ void display()
 	mat4 view = camera.GetViewMatrix(); 
 	mat4 projection = perspective(camera.Zoom, (float)screenWidth / (float)screenHeight, 0.1f, 100.0f);
 
-	//skyboxMesh.drawSkybox(view, projection);
+	skyboxMesh.drawSkybox(view, projection);
 
 	mat4 objectModel = identity_mat4();
 	objectModel = rigidBody.rotation * objectModel;
 	objectModel = translate(objectModel, rigidBody.position);
 
-	//objectMesh.drawMesh(view, projection, objectModel);
+	objectMesh.drawMesh(view, projection, objectModel);
 
 	draw_text();
 	
@@ -168,26 +168,38 @@ void updateRigidBody()
 	//vec3 xdot = rigidBody.velocity;
 	rigidBody.position += rigidBody.velocity * deltaTime;
 
-	versor omega = quat_from_axis_deg(0.0f, rigidBody.angularVelocity.v[0], rigidBody.angularVelocity.v[1], rigidBody.angularVelocity.v[2]);
-	cout << "Omega = " << omega.q[0] << ", " << omega.q[1] << ", " << omega.q[2] << ", " << omega.q[3] << endl;
-	
-	versor qdot = omega * rigidBody.orientation;
-	qdot = qdot * 0.5 * deltaTime;
-	
-	cout << "Qdot = " << qdot.q[0] << ", " << qdot.q[1] << ", " << qdot.q[2] << ", " << qdot.q[3] << endl;
-	normalise(qdot);
-	cout << "Qdot = " << qdot.q[0] << ", " << qdot.q[1] << ", " << qdot.q[2] << ", " << qdot.q[3] << endl;
+	versor omega;
+	omega.q[0] = 0.0f;
+	omega.q[1] = rigidBody.angularVelocity.v[0];
+	omega.q[2] = rigidBody.angularVelocity.v[1];
+	omega.q[3] = rigidBody.angularVelocity.v[2];
 
-	// Not sure if this will be correct
-	multiplyQuat(rigidBody.orientation, qdot, rigidBody.orientation);
+	versor angularVelocityQuat;
+	float avMag = quatMagnitude(omega);
+	angularVelocityQuat.q[0] = cos((avMag * deltaTime) / 2);
+	if (avMag > 0)
+	{
+		angularVelocityQuat.q[1] = (rigidBody.angularVelocity.v[0] / avMag) * sin((avMag * deltaTime) / 2);
+		angularVelocityQuat.q[2] = (rigidBody.angularVelocity.v[1] / avMag) * sin((avMag * deltaTime) / 2);
+		angularVelocityQuat.q[3] = (rigidBody.angularVelocity.v[2] / avMag) * sin((avMag * deltaTime) / 2);
+	}
+	else
+	{
+		angularVelocityQuat.q[1] = 0.0f;
+		angularVelocityQuat.q[2] = 0.0f;
+		angularVelocityQuat.q[3] = 0.0f;
+	}
+	//cout << "angularVelocityQuat = " << angularVelocityQuat.q[0] << ", " << angularVelocityQuat.q[1] << ", " << angularVelocityQuat.q[2] << ", " << angularVelocityQuat.q[3] << endl;
 
-	//rigidBody.linearMomentum += rigidBody.force * deltaTime;
-	//rigidBody.angularMomentum += rigidBody.torque * deltaTime;
+	multiplyQuat(rigidBody.orientation, angularVelocityQuat, rigidBody.orientation);
+
+	rigidBody.linearMomentum += rigidBody.force * deltaTime;
+	rigidBody.angularMomentum += rigidBody.torque * deltaTime;
 
 	//vec3 pdot = rigidBody.force;
 	//vec3 ldot = rigidBody.torque;
 
-	//rigidBody.velocity = rigidBody.linearMomentum / rigidBody.mass;
+	rigidBody.velocity = rigidBody.linearMomentum / rigidBody.mass;
 	rigidBody.rotation = quat_to_mat4(normalise(rigidBody.orientation));
 	//rigidBody.Iinv = rigidBody.rotation * rigidBody.IbodyInv * transpose(rigidBody.rotation);
 	//rigidBody.angularVelocity = rigidBody.Iinv * rigidBody.angularMomentum;
@@ -210,6 +222,14 @@ void processInput()
 	if (keys['w'])
 	{
 		rigidBody.velocity.v[0] += 0.01f;
+	}
+	if (keys['a'])
+	{
+		rigidBody.angularVelocity.v[0] -= 0.01f;
+	}
+	if (keys['s'])
+	{
+		rigidBody.angularVelocity.v[0] += 0.01f;
 	}
 	if (keys[(char)27])
 		exit(0);
@@ -257,12 +277,17 @@ void pressNormalKeys(unsigned char key, int x, int y)
 	keys[key] = true;
 	if (keys['p'])
 	{
+		rigidBody.force.v[2] = -0.5f;
 	}
 }
 
 void releaseNormalKeys(unsigned char key, int x, int y)
 {
 	keys[key] = false;
+	if (!keys['p'])
+	{
+		rigidBody.force.v[2] = 0.0f;
+	}
 }
 
 void pressSpecialKeys(int key, int x, int y)

@@ -37,9 +37,9 @@ RigidBody::RigidBody()
 	// this->Ibody = 
 	// this->IbodyInv = 
 
-	this->orientation.q[0] = 1.0f;
+	this->orientation.q[0] = 0.0f;
 	this->orientation.q[1] = 0.0f;
-	this->orientation.q[2] = 0.0f;
+	this->orientation.q[2] = 1.0f;
 	this->orientation.q[3] = 0.0f;
 
 	this->position = vec4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -78,4 +78,11 @@ void multiplyQuat(versor &result, versor r, versor s)
 	result.q[3] = s.q[0] * r.q[3] - s.q[1] * r.q[2] +
 		s.q[2] * r.q[1] + s.q[3] * r.q[0];
 	normalise(result); // Re-normalise
+}
+
+float quatMagnitude(versor v)
+{
+	float sum = v.q[0] * v.q[0] + v.q[1] * v.q[1] + v.q[2] * v.q[2] + v.q[3] * v.q[3];
+	float result = sqrt(sum);
+	return result;
 }
