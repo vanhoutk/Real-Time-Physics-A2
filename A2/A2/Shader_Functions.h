@@ -1,28 +1,21 @@
 #include <GL/glew.h>
 #include <stdio.h>
 #include <windows.h>
+#include <string>
+#include <fstream>
+#include <streambuf>
 
 #pragma once
-
+using namespace std;
 // Create a NULL-terminated string by reading the provided file
-char* readShaderSource(const char* shaderFile)
+string readShaderSource(const char* shaderFile)
 {
-	FILE* fp;
-	fopen_s(&fp, shaderFile, "r");
-
-	if (fp == NULL) { return NULL; }
-
-	fseek(fp, 0L, SEEK_END);
-	long size = ftell(fp);
-
-	fseek(fp, 0L, SEEK_SET);
-	char* buf = new char[size + 1];
-	fread(buf, 1, size, fp);
-	buf[size] = '\0';
-
-	fclose(fp);
-
-	return buf;
+	ifstream in(shaderFile);
+	auto buf = ostringstream{};
+	buf << in.rdbuf();
+	string s = buf.str();
+	in.close();
+	return s;
 }
 
 static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
@@ -34,7 +27,8 @@ static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum Shad
 		fprintf(stderr, "Error creating shader type %d\n", ShaderType);
 		exit(0);
 	}
-	const char* pShaderSource = readShaderSource(pShaderText);
+	string sShaderSource = readShaderSource(pShaderText);
+	const char* pShaderSource = sShaderSource.c_str();
 
 	// Bind the source code to the shader, this happens before compilation
 	glShaderSource(ShaderObj, 1, (const GLchar**)&pShaderSource, NULL);

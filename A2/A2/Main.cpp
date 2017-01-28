@@ -271,20 +271,6 @@ void init()
 	objectMesh.loadTexture(textureFiles[OBJECT_TEXTURE]);
 
 	rigidBody = RigidBody(objectMesh.vertex_count, objectMesh.vertex_positions);
-
-	cout << "Stop here." << endl;
-
-	/*GLfloat testMass;
-	vec4 testCenter;
-	mat4 testInertia;
-
-	ComputeMassProperties(12, 36, false, testMass, testCenter, testInertia);
-
-	cout << "Mass: " << testMass << endl;
-	cout << "Center: " << testCenter.v[0] << ", " << testCenter.v[1] << ", " << testCenter.v[2] << endl;
-	cout << "Inertia: " << testInertia.m[0] << " " << testInertia.m[4] << " " << testInertia.m[8] << endl;
-	cout << "\t" << testInertia.m[1] << " " << testInertia.m[5] << " " << testInertia.m[9] << endl;
-	cout << "\t" << testInertia.m[2] << " " << testInertia.m[6] << " " << testInertia.m[10] << endl;*/
 }
 
 /*
