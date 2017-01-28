@@ -26,6 +26,7 @@ using namespace std;
 class Mesh {
 public:
 	int vertex_count;
+	vector<float> vertex_positions;
 
 	Mesh();
 	Mesh(GLuint* shaderID);
@@ -50,7 +51,6 @@ private:
 	
 	vector<float> normals;
 	vector<float> texture_coords;
-	vector<float> vertex_positions;
 };
 
 Mesh::Mesh()
