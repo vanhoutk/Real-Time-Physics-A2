@@ -205,6 +205,26 @@ struct vec4 {
 	}
 
 	// Added by Kris
+	vec4 operator+ (const vec4& rhs) {
+		vec4 vc;
+		vc.v[0] = v[0] + rhs.v[0];
+		vc.v[1] = v[1] + rhs.v[1];
+		vc.v[2] = v[2] + rhs.v[2];
+		vc.v[3] = v[3] + rhs.v[3];
+		return vc;
+	}
+
+	// Added by Kris
+	vec4 operator- (const vec4& rhs) {
+		vec4 vc;
+		vc.v[0] = v[0] - rhs.v[0];
+		vc.v[1] = v[1] - rhs.v[1];
+		vc.v[2] = v[2] - rhs.v[2];
+		vc.v[3] = v[3] - rhs.v[3];
+		return vc;
+	}
+
+	// Added by Kris
 	vec4 operator* (float rhs) {
 		vec4 vc;
 		vc.v[0] = v[0] * rhs;
@@ -464,6 +484,15 @@ inline vec3 cross(const vec3& a, const vec3& b) {
 	float y = a.v[2] * b.v[0] - a.v[0] * b.v[2];
 	float z = a.v[0] * b.v[1] - a.v[1] * b.v[0];
 	return vec3(x, y, z);
+}
+
+inline vec4 cross(const vec4& a, const vec4& b)
+{
+	float x = a.v[1] * b.v[2] - a.v[2] * b.v[1];
+	float y = a.v[2] * b.v[0] - a.v[0] * b.v[2];
+	float z = a.v[0] * b.v[1] - a.v[1] * b.v[0];
+	float w = 0.0f;
+	return vec4(x, y, z, w);
 }
 
 inline float get_squared_dist(vec3 from, vec3 to) {

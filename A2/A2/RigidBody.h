@@ -11,7 +11,7 @@ public:
 	GLfloat mass;
 	mat4 Ibody;
 	mat4 IbodyInv;
-	vec4 center;
+	vec4 bodyCOM;
 
 	// State Variables
 	vec4 position;			// x(t)
@@ -31,8 +31,8 @@ public:
 
 	// Mesh information
 	GLuint numTriangles;
-	vector<vec3> bodyVertices;
-	vector<vec3> worldVertices;
+	vector<vec4> bodyVertices;
+	vector<vec4> worldVertices;
 
 	RigidBody();
 	RigidBody(int vertex_count, vector<float> vertex_positions);
@@ -73,15 +73,15 @@ RigidBody::RigidBody(int vertex_count, vector<float> vertex_positions)
 
 	for (int i = 0; i < vertex_count; i++)
 	{
-		this->bodyVertices.push_back(vec3(vertex_positions[i * 3], vertex_positions[1 + i * 3], vertex_positions[2 + i * 3]));
-		this->worldVertices.push_back(vec3(vertex_positions[i * 3], vertex_positions[1 + i * 3], vertex_positions[2 + i * 3]));
+		this->bodyVertices.push_back(vec4(vertex_positions[i * 3], vertex_positions[1 + i * 3], vertex_positions[2 + i * 3], 0.0f));
+		this->worldVertices.push_back(vec4(vertex_positions[i * 3], vertex_positions[1 + i * 3], vertex_positions[2 + i * 3], 0.0f));
 	}
 
 	this->numTriangles = vertex_count / 3;
 
 	// Constants
 	computeMassInertia(false);
-	this->IbodyInv = inverse(Ibody);
+	this->IbodyInv = inverse(this->Ibody);
 
 	// State Variables
 	this->position = vec4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -94,7 +94,7 @@ RigidBody::RigidBody(int vertex_count, vector<float> vertex_positions)
 
 	// Derived Quantities
 	this->rotation = quat_to_mat4(this->orientation);
-	this->Iinv = this->rotation * IbodyInv * transpose(this->rotation);
+	this->Iinv = this->rotation * this->IbodyInv * transpose(this->rotation);
 	this->velocity = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	this->angularVelocity = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -247,7 +247,7 @@ void RigidBody::computeMassInertia(bool bodyCoords)
 	this->mass = integral[0];
 
 	// center of mass
-	this->center = vec4(integral[1], integral[2], integral[3], 0.0f) / mass;
+	this->bodyCOM = vec4(integral[1], integral[2], integral[3], 0.0f) / mass;
 
 	// inertia relative to world origin
 	this->Ibody.m[0] = integral[5] + integral[6];
@@ -273,19 +273,19 @@ void RigidBody::computeMassInertia(bool bodyCoords)
 	// inertia relative to center of mass
 	if (bodyCoords)
 	{
-		this->Ibody.m[0] -= mass*(center.v[1] * center.v[1] + center.v[2] * center.v[2]);
-		this->Ibody.m[1] += mass*center.v[0] * center.v[1];
-		this->Ibody.m[2] += mass*center.v[2] * center.v[0];
+		this->Ibody.m[0] -= mass*(bodyCOM.v[1] * bodyCOM.v[1] + bodyCOM.v[2] * bodyCOM.v[2]);
+		this->Ibody.m[1] += mass*bodyCOM.v[0] * bodyCOM.v[1];
+		this->Ibody.m[2] += mass*bodyCOM.v[2] * bodyCOM.v[0];
 		this->Ibody.m[3] = 0.0f;
 
-		this->Ibody.m[4] += mass*center.v[0] * center.v[1];
-		this->Ibody.m[5] -= mass*(center.v[2] * center.v[2] + center.v[0] * center.v[0]);
-		this->Ibody.m[6] += mass*center.v[1] * center.v[2];
+		this->Ibody.m[4] += mass*bodyCOM.v[0] * bodyCOM.v[1];
+		this->Ibody.m[5] -= mass*(bodyCOM.v[2] * bodyCOM.v[2] + bodyCOM.v[0] * bodyCOM.v[0]);
+		this->Ibody.m[6] += mass*bodyCOM.v[1] * bodyCOM.v[2];
 		this->Ibody.m[7] = 0.0f;
 
-		this->Ibody.m[8] += mass*center.v[2] * center.v[0];
-		this->Ibody.m[9] += mass*center.v[1] * center.v[2];
-		this->Ibody.m[10] -= mass*(center.v[0] * center.v[0] + center.v[1] * center.v[1]);
+		this->Ibody.m[8] += mass*bodyCOM.v[2] * bodyCOM.v[0];
+		this->Ibody.m[9] += mass*bodyCOM.v[1] * bodyCOM.v[2];
+		this->Ibody.m[10] -= mass*(bodyCOM.v[0] * bodyCOM.v[0] + bodyCOM.v[1] * bodyCOM.v[1]);
 		this->Ibody.m[11] = 0.0f;
 
 		this->Ibody.m[12] = 0.0f;
@@ -312,6 +312,13 @@ void multiplyQuat(versor &result, versor r, versor s)
 float quatMagnitude(versor v)
 {
 	float sum = v.q[0] * v.q[0] + v.q[1] * v.q[1] + v.q[2] * v.q[2] + v.q[3] * v.q[3];
+	float result = sqrt(sum);
+	return result;
+}
+
+float vec4Magnitude(vec4 v)
+{
+	float sum = v.v[0] * v.v[0] + v.v[1] * v.v[1] + v.v[2] * v.v[2] + v.v[3] * v.v[3];
 	float result = sqrt(sum);
 	return result;
 }

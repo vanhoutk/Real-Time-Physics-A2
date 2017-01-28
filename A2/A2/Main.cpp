@@ -167,12 +167,38 @@ void computeForcesAndTorque()
 	// Clear Forces
 	rigidBody.force = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	rigidBody.torque = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+	if (keys['r'])
+	{
+		rigidBody.force = vec4(0.0f, 0.0f, 1.0f, 0.0f);
+	}
+
+	// Add an orbiting force around 0, 0, 0
+	vec4 orbitDirection = rigidBody.position * -1;
+	float mag = vec4Magnitude(rigidBody.position);
+	
+	float gF = 6.674 * (10 ^ -11);
+	float orbitMass = 1000000.0f;
+	float orbitMagnitude = 0.0f;
+	if (mag > 0)
+	{
+		//orbitDirection = orbitDirection / mag;
+		orbitMagnitude = (gF * rigidBody.mass * orbitMass) / (mag * mag);
+	}
+	vec4 orbitForce = orbitDirection / 100;// *orbitMagnitude;
+
+	rigidBody.force += orbitForce;
+
+	for (int i = 0; i < rigidBody.numTriangles * 3; i++)
+	{
+		rigidBody.torque += cross((rigidBody.worldVertices[i] - rigidBody.position), orbitForce);
+	}
 }
 
 void updateRigidBody()
 {
 	// Might change this to user input
-	//computeForcesAndTorque();
+	computeForcesAndTorque();
 
 	//vec3 xdot = rigidBody.velocity;
 	rigidBody.position += rigidBody.velocity * deltaTime;
@@ -208,6 +234,12 @@ void updateRigidBody()
 	rigidBody.rotation = quat_to_mat4(normalise(rigidBody.orientation));
 	rigidBody.Iinv = rigidBody.rotation * rigidBody.IbodyInv * transpose(rigidBody.rotation);
 	rigidBody.angularVelocity = rigidBody.Iinv * rigidBody.angularMomentum;
+
+	// Update all world points
+	for (int i = 0; i < rigidBody.numTriangles * 3; i++)
+	{
+		rigidBody.worldVertices[i] = (rigidBody.rotation * rigidBody.worldVertices[i]) + rigidBody.position;
+	}
 }
 
 void processInput()
