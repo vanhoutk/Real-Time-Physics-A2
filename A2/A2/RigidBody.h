@@ -31,6 +31,7 @@ public:
 
 	// Mesh information
 	GLuint numTriangles;
+	GLuint numPoints;
 	vector<vec4> bodyVertices;
 	vector<vec4> worldVertices;
 
@@ -77,6 +78,10 @@ RigidBody::RigidBody(int vertex_count, vector<float> vertex_positions)
 		this->worldVertices.push_back(vec4(vertex_positions[i * 3], vertex_positions[1 + i * 3], vertex_positions[2 + i * 3], 0.0f));
 	}
 
+	sort(this->worldVertices.begin(), this->worldVertices.end());
+	this->worldVertices.erase(unique(this->worldVertices.begin(), this->worldVertices.end()), this->worldVertices.end());
+	this->numPoints = this->worldVertices.size();
+
 	this->numTriangles = vertex_count / 3;
 
 	// Constants
@@ -84,7 +89,7 @@ RigidBody::RigidBody(int vertex_count, vector<float> vertex_positions)
 	this->IbodyInv = inverse(this->Ibody);
 
 	// State Variables
-	this->position = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	this->position = vec4(1.0f, 0.0f, 0.0f, 0.0f);
 	this->orientation.q[0] = 0.0f;
 	this->orientation.q[1] = 0.0f;
 	this->orientation.q[2] = 1.0f;
@@ -323,3 +328,14 @@ float vec4Magnitude(vec4 v)
 	return result;
 }
 
+bool operator < (const vec4 &lhs, const vec4 &rhs) {
+	if (lhs.v[0] < rhs.v[0]) return true;
+	if (lhs.v[0] > rhs.v[0]) return false;
+	if (lhs.v[1] < rhs.v[1]) return true;
+	if (lhs.v[1] > rhs.v[1]) return false;
+	return (lhs.v[2] < rhs.v[2]);
+}
+
+bool operator == (const vec4 &lhs, const vec4 &rhs) {
+	return (lhs.v[0] == rhs.v[0]) && (lhs.v[1] == rhs.v[1]) && (lhs.v[2] == rhs.v[2]);
+}
