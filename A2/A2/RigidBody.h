@@ -89,7 +89,7 @@ RigidBody::RigidBody(int vertex_count, vector<float> vertex_positions)
 	this->IbodyInv = inverse(this->Ibody);
 
 	// State Variables
-	this->position = vec4(1.0f, 0.0f, 0.0f, 0.0f);
+	this->position = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	this->orientation.q[0] = 0.0f;
 	this->orientation.q[1] = 0.0f;
 	this->orientation.q[2] = 1.0f;
@@ -338,4 +338,16 @@ bool operator < (const vec4 &lhs, const vec4 &rhs) {
 
 bool operator == (const vec4 &lhs, const vec4 &rhs) {
 	return (lhs.v[0] == rhs.v[0]) && (lhs.v[1] == rhs.v[1]) && (lhs.v[2] == rhs.v[2]);
+}
+
+vec4 getTorque(vec4 force, vec4 position, vec4 point)
+{
+	vec4 pointToCOM = point - position;
+
+	//float cosAngle = dot(vec3(pointToCOM.v[0], pointToCOM.v[1], pointToCOM.v[2]), vec3(force.v[0], force.v[1], force.v[2])) / (vec4Magnitude(pointToCOM) * vec4Magnitude(force));
+	//cout << "cosAngle: " << cosAngle << endl;
+	//float angle = acos(cosAngle);
+	//cout << "Angle: " << angle << endl;
+	//cout << "sinAngle: " << sin(angle) << endl;
+	return cross(pointToCOM, force); // force * vec4Magnitude(pointToCOM) * sin(angle);
 }

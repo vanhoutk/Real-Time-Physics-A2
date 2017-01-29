@@ -57,7 +57,7 @@ vec4 fulcrum = vec4(0.0f, 5.0f, 0.0f, 0.0f);
 //vec3 groundNormal = vec3(0.0f, 1.0f, 0.0f);
 
 // | Resource Locations
-const char * meshFiles[NUM_MESHES] = { "../Meshes/particle_reduced.dae" };
+const char * meshFiles[NUM_MESHES] = { "../Meshes/Ground.dae" };
 const char * skyboxTextureFiles[6] = { "../Textures/DSposx.png", "../Textures/DSnegx.png", "../Textures/DSposy.png", "../Textures/DSnegy.png", "../Textures/DSposz.png", "../Textures/DSnegz.png"};
 const char * textureFiles[NUM_TEXTURES] = { "../Textures/asphalt.jpg" };
 
@@ -174,8 +174,19 @@ void display()
 void computeForcesAndTorque()
 {
 	// Clear Forces
-	//rigidBody.force = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-	//rigidBody.torque = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	rigidBody.force = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	rigidBody.torque = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+	rigidBody.force += vec4(-1.0f, 0.0f, 0.0f, 0.0f);
+
+	vec4 torqueVec = vec4(1.0f, 0.0f, 0.0f, 0.0f) - rigidBody.position;
+
+	float cosAngle = dot(vec3(torqueVec.v[0], torqueVec.v[1], torqueVec.v[2]), vec3(rigidBody.force.v[0], rigidBody.force.v[1], rigidBody.force.v[2])) / (vec4Magnitude(torqueVec) * vec4Magnitude(rigidBody.force));
+	cout << "cosAngle: " << cosAngle << endl;
+	float angle = acos(cosAngle);
+	cout << "Angle: " << angle << endl;
+	cout << "sinAngle: " << sin(angle) << endl;
+	rigidBody.torque = getTorque(rigidBody.force, rigidBody.position, vec4(1.0f, 1.0f, 0.0f, 0.0f));
 
 	/*rigidBody.force += gravity * 0.1f * rigidBody.mass;
 	cout << "Force: " << rigidBody.force.v[0] << ", " << rigidBody.force.v[1] << ", " << rigidBody.force.v[2] << endl;
@@ -208,12 +219,7 @@ void computeForcesAndTorque()
 	}
 	vec4 orbitForce = orbitDirection / 100;// *orbitMagnitude;
 
-	rigidBody.force += orbitForce;
-
-	for (int i = 0; i < rigidBody.numPoints; i++)
-	{
-		rigidBody.torque += cross((rigidBody.worldVertices[0] - rigidBody.position), orbitForce);
-	}*/
+	rigidBody.force += orbitForce;*/
 }
 
 void updateRigidBody()
@@ -320,12 +326,12 @@ void pressNormalKeys(unsigned char key, int x, int y)
 	if (keys['p'])
 	{
 		rigidBody.force = vec4(0.0f, 0.01f, 0.0f, 0.0f);
-		rigidBody.torque = cross((rigidBody.worldVertices[0] - rigidBody.position), rigidBody.force);
+		rigidBody.torque = getTorque(rigidBody.force, rigidBody.position, rigidBody.worldVertices[0]);
 	}
 	if (keys['o'])
 	{
-		rigidBody.force = vec4(0.0f, -0.01f, 0.0f, 0.0f);
-		rigidBody.torque = cross((rigidBody.worldVertices[0] - rigidBody.position), rigidBody.force);
+		rigidBody.force = vec4(0.0f, -1.0f, 0.0f, 0.0f);
+		rigidBody.torque = getTorque(rigidBody.force, rigidBody.position, vec4(10.0f, 0.0f, 0.0f, 0.0f));
 	}
 	if (keys['q'])
 		rigidBody.force = vec4(-0.1f, 0.0f, 0.0f, 0.0f);
