@@ -36,7 +36,7 @@ using namespace std;
 
 bool firstMouse = true;
 bool keys[1024];
-Camera camera(vec3(0.0f, -0.5f, 3.0f));
+Camera camera(vec3(3.0f, 2.0f, 7.0f));
 enum Meshes { OBJECT_MESH };
 enum Shaders { SKYBOX, PARTICLE_SHADER, BASIC_TEXTURE_SHADER };
 enum Textures { OBJECT_TEXTURE };
@@ -57,9 +57,9 @@ vec4 fulcrum = vec4(0.0f, 5.0f, 0.0f, 0.0f);
 //vec3 groundNormal = vec3(0.0f, 1.0f, 0.0f);
 
 // | Resource Locations
-const char * meshFiles[NUM_MESHES] = { "../Meshes/Ground.dae" };
+const char * meshFiles[NUM_MESHES] = { "../Meshes/airplane3.dae" };
 const char * skyboxTextureFiles[6] = { "../Textures/DSposx.png", "../Textures/DSnegx.png", "../Textures/DSposy.png", "../Textures/DSnegy.png", "../Textures/DSposz.png", "../Textures/DSnegz.png"};
-const char * textureFiles[NUM_TEXTURES] = { "../Textures/asphalt.jpg" };
+const char * textureFiles[NUM_TEXTURES] = { "../Textures/plane.jpg" };
 
 const char * vertexShaderNames[NUM_SHADERS] = { "../Shaders/SkyboxVertexShader.txt", "../Shaders/ParticleVertexShader.txt", "../Shaders/BasicTextureVertexShader.txt" };
 const char * fragmentShaderNames[NUM_SHADERS] = { "../Shaders/SkyboxFragmentShader.txt", "../Shaders/ParticleFragmentShader.txt", "../Shaders/BasicTextureFragmentShader.txt" };
@@ -338,9 +338,9 @@ void pressNormalKeys(unsigned char key, int x, int y)
 	if (keys['w'])
 		rigidBody.force = vec4(0.1f, 0.0f, 0.0f, 0.0f);
 	if (keys['a'])
-		rigidBody.force = vec4(-0.1f, -0.1f, 0.0f, 0.0f);
+		rigidBody.force = vec4(0.0f, -0.1f, 0.0f, 0.0f);
 	if (keys['s'])
-		rigidBody.force = vec4(0.1f, 0.1f, 0.0f, 0.0f);
+		rigidBody.force = vec4(0.0f, 0.1f, 0.0f, 0.0f);
 	if (keys['z'])
 		rigidBody.force = vec4(0.0f, 0.0f, -0.1f, 0.0f);
 	if (keys['x'])
@@ -351,9 +351,9 @@ void pressNormalKeys(unsigned char key, int x, int y)
 	if (keys['y'])
 		rigidBody.torque = vec4(0.1f, 0.0f, 0.0f, 0.0f);
 	if (keys['g'])
-		rigidBody.torque = vec4(-0.1f, -0.1f, 0.0f, 0.0f);
+		rigidBody.torque = vec4(0.0f, -0.1f, 0.0f, 0.0f);
 	if (keys['h'])
-		rigidBody.torque = vec4(0.1f, 0.1f, 0.0f, 0.0f);
+		rigidBody.torque = vec4(0.0f, 0.1f, 0.0f, 0.0f);
 	if (keys['b'])
 		rigidBody.torque = vec4(0.0f, 0.0f, -0.1f, 0.0f);
 	if (keys['n'])
@@ -365,6 +365,10 @@ void pressNormalKeys(unsigned char key, int x, int y)
 		rigidBody.position = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 		rigidBody.velocity = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 		rigidBody.linearMomentum = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+		rigidBody.orientation.q[0] = 0.0f;
+		rigidBody.orientation.q[1] = 0.0f;
+		rigidBody.orientation.q[2] = 1.0f;
+		rigidBody.orientation.q[3] = 0.0f;
 	}
 }
 
