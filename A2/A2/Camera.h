@@ -9,7 +9,7 @@
 
 #define PI 3.14159265358979
 
-enum Camera_Movement {FORWARD, BACKWARD, LEFT, RIGHT};
+enum Camera_Movement { FORWARD, BACKWARD, LEFT, RIGHT };
 
 // Default camera values
 const GLfloat YAW = -90.0f;
@@ -126,7 +126,7 @@ private:
 	GLfloat radians(GLfloat degrees)
 	{
 		// TODO: Make sure this works correctly
-		return (degrees * ((2.0 * PI) / 360.0));
+		return (degrees * ((2.0f * (float)PI) / 360.0f));
 	}
-	
+
 };

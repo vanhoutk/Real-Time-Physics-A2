@@ -19,9 +19,9 @@
 #include <math.h>
 
 // const used to convert degrees into radians
-#define TAU 2.0 * M_PI
-#define ONE_DEG_IN_RAD (2.0 * M_PI) / 360.0 // 0.017444444
-#define ONE_RAD_IN_DEG 360.0 / (2.0 * M_PI) //57.2957795
+#define TAU 2.0f * (float)M_PI
+#define ONE_DEG_IN_RAD (2.0f * (float)M_PI) / 360.0f // 0.017444444
+#define ONE_RAD_IN_DEG 360.0f / (2.0f * (float)M_PI) //57.2957795
 
 // data structures
 struct vec2;
@@ -250,6 +250,15 @@ struct vec4 {
 		v[1] += rhs.v[1];
 		v[2] += rhs.v[2];
 		v[3] += rhs.v[3];
+		return *this; // return self
+	}
+
+	// Added by Kris
+	vec4& operator-= (const vec4& rhs) {
+		v[0] -= rhs.v[0];
+		v[1] -= rhs.v[1];
+		v[2] -= rhs.v[2];
+		v[3] -= rhs.v[3];
 		return *this; // return self
 	}
 
@@ -506,11 +515,11 @@ inline float get_squared_dist(vec3 from, vec3 to) {
 NB i suspect that the z is backwards here but i've used in in
 several places like this. d'oh! */
 inline float direction_to_heading(vec3 d) {
-	return atan2(-d.v[0], -d.v[2]) * ONE_RAD_IN_DEG;
+	return atan2(-d.v[0], -d.v[2]) * (float)ONE_RAD_IN_DEG;
 }
 
 inline vec3 heading_to_direction(float degrees) {
-	float rad = degrees * ONE_DEG_IN_RAD;
+	float rad = degrees * (float)ONE_DEG_IN_RAD;
 	return vec3(-sinf(rad), 0.0f, -cosf(rad));
 }
 
@@ -705,7 +714,7 @@ inline mat4 translate(const mat4& m, const vec3& v) {
 // rotate around x axis by an angle in degrees
 inline mat4 rotate_x_deg(const mat4& m, float deg) {
 	// convert to radians
-	float rad = deg * ONE_DEG_IN_RAD;
+	float rad = deg * (float)ONE_DEG_IN_RAD;
 	mat4 m_r = identity_mat4();
 	m_r.m[5] = cos(rad);
 	m_r.m[9] = -sin(rad);
@@ -717,7 +726,7 @@ inline mat4 rotate_x_deg(const mat4& m, float deg) {
 // rotate around y axis by an angle in degrees
 inline mat4 rotate_y_deg(const mat4& m, float deg) {
 	// convert to radians
-	float rad = deg * ONE_DEG_IN_RAD;
+	float rad = deg * (float)ONE_DEG_IN_RAD;
 	mat4 m_r = identity_mat4();
 	m_r.m[0] = cos(rad);
 	m_r.m[8] = sin(rad);
@@ -729,7 +738,7 @@ inline mat4 rotate_y_deg(const mat4& m, float deg) {
 // rotate around z axis by an angle in degrees
 inline mat4 rotate_z_deg(const mat4& m, float deg) {
 	// convert to radians
-	float rad = deg * ONE_DEG_IN_RAD;
+	float rad = deg * (float)ONE_DEG_IN_RAD;
 	mat4 m_r = identity_mat4();
 	m_r.m[0] = cos(rad);
 	m_r.m[4] = -sin(rad);
@@ -777,7 +786,7 @@ inline mat4 look_at(const vec3& cam_pos, vec3 targ_pos, const vec3& up) {
 
 // returns a perspective function mimicking the opengl projection style.
 inline mat4 perspective(float fovy, float aspect, float _near, float _far) {
-	float fov_rad = fovy * ONE_DEG_IN_RAD;
+	float fov_rad = fovy * (float)ONE_DEG_IN_RAD;
 	float range = tan(fov_rad / 2.0f) * _near;
 	float sx = (2.0f * _near) / (range * aspect + range * aspect);
 	float sy = _near / range;
@@ -794,10 +803,10 @@ inline mat4 perspective(float fovy, float aspect, float _near, float _far) {
 /*----------------------------HAMILTON IN DA HOUSE!---------------------------*/
 inline versor quat_from_axis_rad(float radians, float x, float y, float z) {
 	versor result;
-	result.q[0] = cos(radians / 2.0);
-	result.q[1] = sin(radians / 2.0) * x;
-	result.q[2] = sin(radians / 2.0) * y;
-	result.q[3] = sin(radians / 2.0) * z;
+	result.q[0] = (float)cos(radians / 2.0);
+	result.q[1] = (float)sin(radians / 2.0) * x;
+	result.q[2] = (float)sin(radians / 2.0) * y;
+	result.q[3] = (float)sin(radians / 2.0) * z;
 	return result;
 }
 
@@ -884,6 +893,46 @@ inline versor slerp(versor& q, versor& r, float t) {
 	for (int i = 0; i < 4; i++) {
 		result.q[i] = q.q[i] * a + r.q[i] * b;
 	}
+	return result;
+}
+
+// Added by Kris
+float vec4Magnitude(vec4 v)
+{
+	float sum = v.v[0] * v.v[0] + v.v[1] * v.v[1] + v.v[2] * v.v[2] + v.v[3] * v.v[3];
+	float result = sqrt(sum);
+	return result;
+}
+
+bool operator < (const vec4 &lhs, const vec4 &rhs) {
+	if (lhs.v[0] < rhs.v[0]) return true;
+	if (lhs.v[0] > rhs.v[0]) return false;
+	if (lhs.v[1] < rhs.v[1]) return true;
+	if (lhs.v[1] > rhs.v[1]) return false;
+	return (lhs.v[2] < rhs.v[2]);
+}
+
+bool operator == (const vec4 &lhs, const vec4 &rhs) {
+	return (lhs.v[0] == rhs.v[0]) && (lhs.v[1] == rhs.v[1]) && (lhs.v[2] == rhs.v[2]);
+}
+
+void multiplyQuat(versor &result, versor r, versor s)
+{
+	result.q[0] = s.q[0] * r.q[0] - s.q[1] * r.q[1] -
+		s.q[2] * r.q[2] - s.q[3] * r.q[3];
+	result.q[1] = s.q[0] * r.q[1] + s.q[1] * r.q[0] -
+		s.q[2] * r.q[3] + s.q[3] * r.q[2];
+	result.q[2] = s.q[0] * r.q[2] + s.q[1] * r.q[3] +
+		s.q[2] * r.q[0] - s.q[3] * r.q[1];
+	result.q[3] = s.q[0] * r.q[3] - s.q[1] * r.q[2] +
+		s.q[2] * r.q[1] + s.q[3] * r.q[0];
+	normalise(result); // Re-normalise
+}
+
+float quatMagnitude(versor v)
+{
+	float sum = v.q[0] * v.q[0] + v.q[1] * v.q[1] + v.q[2] * v.q[2] + v.q[3] * v.q[3];
+	float result = sqrt(sum);
 	return result;
 }
 

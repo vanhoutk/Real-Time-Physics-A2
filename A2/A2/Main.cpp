@@ -36,30 +36,25 @@ using namespace std;
 
 bool firstMouse = true;
 bool keys[1024];
-Camera camera(vec3(3.0f, 2.0f, 7.0f));
+Camera camera(vec3(0.0f, 0.0f, 10.0f));
 enum Meshes { OBJECT_MESH };
 enum Shaders { SKYBOX, PARTICLE_SHADER, BASIC_TEXTURE_SHADER };
 enum Textures { OBJECT_TEXTURE };
 GLfloat cameraSpeed = 0.005f;
-GLfloat deltaTime = 1.0f / 60.0f;
 GLfloat friction = 0.98f;
-GLfloat lastX = 400, lastY = 300;
 GLfloat resilience = 0.01f;
+GLuint lastX = 400, lastY = 300;
 GLuint shaderProgramID[NUM_SHADERS];
 int screenWidth = 1000;
 int screenHeight = 800;
 int stringIDs[13];
 Mesh skyboxMesh, objectMesh;
 RigidBody rigidBody;
-vec4 gravity = vec4(0.0f, -9.81f, 0.0f, 0.0f);
-vec4 fulcrum = vec4(0.0f, 5.0f, 0.0f, 0.0f);
-//vec3 groundVector = vec3(0.0f, -1.0f, 0.0f);
-//vec3 groundNormal = vec3(0.0f, 1.0f, 0.0f);
 
 // | Resource Locations
-const char * meshFiles[NUM_MESHES] = { "../Meshes/airplane3.dae" };
+const char * meshFiles[NUM_MESHES] = { "../Meshes/particle_reduced.dae" };
 const char * skyboxTextureFiles[6] = { "../Textures/DSposx.png", "../Textures/DSnegx.png", "../Textures/DSposy.png", "../Textures/DSnegy.png", "../Textures/DSposz.png", "../Textures/DSnegz.png"};
-const char * textureFiles[NUM_TEXTURES] = { "../Textures/plane.jpg" };
+const char * textureFiles[NUM_TEXTURES] = { "../Textures/asphalt.jpg" };
 
 const char * vertexShaderNames[NUM_SHADERS] = { "../Shaders/SkyboxVertexShader.txt", "../Shaders/ParticleVertexShader.txt", "../Shaders/BasicTextureVertexShader.txt" };
 const char * fragmentShaderNames[NUM_SHADERS] = { "../Shaders/SkyboxFragmentShader.txt", "../Shaders/ParticleFragmentShader.txt", "../Shaders/BasicTextureFragmentShader.txt" };
@@ -74,57 +69,35 @@ string frf(const float &f)
 
 void draw_text()
 {
-	ostringstream massOSS, ibodyOSS, ibodyIOSS, posOSS, orientOSS, linMomOSS, angMomOSS, iInvOSS, rotOSS, velOSS, angVelOSS, torOSS, forOSS;
-	string mass, ibody, ibodyI, pos, orient, linMom, angMom, iInv, rot, vel, angVel, tor, force;
-	massOSS << "Mass ( " << fixed << setprecision(3) << rigidBody.mass << " )";
-	ibodyOSS << "Ibody \n |" << frf(rigidBody.Ibody.m[0]) << " " << frf(rigidBody.Ibody.m[4]) << " " << frf(rigidBody.Ibody.m[8]) << " |\n" <<
+	ostringstream oss[13]; // massOSS, ibodyOSS, ibodyIOSS, posOSS, orientOSS, linMomOSS, angMomOSS, iInvOSS, rotOSS, velOSS, angVelOSS, torOSS, forOSS;
+	string strings[13]; // mass, ibody, ibodyI, pos, orient, linMom, angMom, iInv, rot, vel, angVel, tor, force;
+	oss[0] << "Mass ( " << fixed << setprecision(3) << rigidBody.mass << " )";
+	oss[1] << "Ibody \n |" << frf(rigidBody.Ibody.m[0]) << " " << frf(rigidBody.Ibody.m[4]) << " " << frf(rigidBody.Ibody.m[8]) << " |\n" <<
 		" |" << frf(rigidBody.Ibody.m[1]) << " " << frf(rigidBody.Ibody.m[5]) << " " << frf(rigidBody.Ibody.m[9]) << " |\n" <<
 		" |" << frf(rigidBody.Ibody.m[2]) << " " << frf(rigidBody.Ibody.m[6]) << " " << frf(rigidBody.Ibody.m[10]) << " |";
-	ibodyIOSS << "Ibody-1 \n |" << frf(rigidBody.IbodyInv.m[0]) << " " << frf(rigidBody.IbodyInv.m[4]) << " " << frf(rigidBody.IbodyInv.m[8]) << " |\n" <<
+	oss[2] << "Ibody-1 \n |" << frf(rigidBody.IbodyInv.m[0]) << " " << frf(rigidBody.IbodyInv.m[4]) << " " << frf(rigidBody.IbodyInv.m[8]) << " |\n" <<
 		" |" << frf(rigidBody.IbodyInv.m[1]) << " " << frf(rigidBody.IbodyInv.m[5]) << " " << frf(rigidBody.IbodyInv.m[9]) << " |\n" <<
 		" |" << frf(rigidBody.IbodyInv.m[2]) << " " << frf(rigidBody.IbodyInv.m[6]) << " " << frf(rigidBody.IbodyInv.m[10]) << " |";
-	posOSS << "Position ( " << frf(rigidBody.position.v[0]) << ", " << frf(rigidBody.position.v[1]) << ", " << frf(rigidBody.position.v[2]) << ")";
-	orientOSS << "Orientation ( " << frf(rigidBody.orientation.q[0]) << ", " << frf(rigidBody.orientation.q[1]) << ", " << frf(rigidBody.orientation.q[2]) << ", " << frf(rigidBody.orientation.q[3]) << ")";
-	linMomOSS << "Linear Momentum ( " << frf(rigidBody.linearMomentum.v[0]) << ", " << frf(rigidBody.linearMomentum.v[1]) << ", " << frf(rigidBody.linearMomentum.v[2]) << ")";
-	angMomOSS << "Angular Momentum ( " << frf(rigidBody.angularMomentum.v[0]) << ", " << frf(rigidBody.angularMomentum.v[1]) << ", " << frf(rigidBody.angularMomentum.v[2]) << ")";
-	iInvOSS << "I-1 \n |" << frf(rigidBody.Iinv.m[0]) << " " << frf(rigidBody.Iinv.m[4]) << " " << frf(rigidBody.Iinv.m[8]) << " |\n" <<
+	oss[3] << "Position ( " << frf(rigidBody.position.v[0]) << ", " << frf(rigidBody.position.v[1]) << ", " << frf(rigidBody.position.v[2]) << ")";
+	oss[4] << "Orientation ( " << frf(rigidBody.orientation.q[0]) << ", " << frf(rigidBody.orientation.q[1]) << ", " << frf(rigidBody.orientation.q[2]) << ", " << frf(rigidBody.orientation.q[3]) << ")";
+	oss[5] << "Linear Momentum ( " << frf(rigidBody.linearMomentum.v[0]) << ", " << frf(rigidBody.linearMomentum.v[1]) << ", " << frf(rigidBody.linearMomentum.v[2]) << ")";
+	oss[6] << "Angular Momentum ( " << frf(rigidBody.angularMomentum.v[0]) << ", " << frf(rigidBody.angularMomentum.v[1]) << ", " << frf(rigidBody.angularMomentum.v[2]) << ")";
+	oss[7] << "I-1 \n |" << frf(rigidBody.Iinv.m[0]) << " " << frf(rigidBody.Iinv.m[4]) << " " << frf(rigidBody.Iinv.m[8]) << " |\n" <<
 		" |" << frf(rigidBody.Iinv.m[1]) << " " << frf(rigidBody.Iinv.m[5]) << " " << frf(rigidBody.Iinv.m[9]) << " |\n" <<
 		" |" << frf(rigidBody.Iinv.m[2]) << " " << frf(rigidBody.Iinv.m[6]) << " " << frf(rigidBody.Iinv.m[10]) << " |";
-	rotOSS << "Rotation \n |" << frf(rigidBody.rotation.m[0]) << " " << frf(rigidBody.rotation.m[4]) << " " << frf(rigidBody.rotation.m[8]) << " |\n" <<
+	oss[8] << "Rotation \n |" << frf(rigidBody.rotation.m[0]) << " " << frf(rigidBody.rotation.m[4]) << " " << frf(rigidBody.rotation.m[8]) << " |\n" <<
 		" |" << frf(rigidBody.rotation.m[1]) << " " << frf(rigidBody.rotation.m[5]) << " " << frf(rigidBody.rotation.m[9]) << " |\n" <<
 		" |" << frf(rigidBody.rotation.m[2]) << " " << frf(rigidBody.rotation.m[6]) << " " << frf(rigidBody.rotation.m[10]) << " |";
-	velOSS << "Velocity ( " << fixed << setprecision(3) << rigidBody.velocity.v[0] << ", " << rigidBody.velocity.v[1] << ", " << rigidBody.velocity.v[2] << ")";
-	angVelOSS << "Angular Velocity ( " << frf(rigidBody.angularVelocity.v[0]) << ", " << frf(rigidBody.angularVelocity.v[1]) << ", " << frf(rigidBody.angularVelocity.v[2]) << ")";
-	torOSS << "Torque ( " << frf(rigidBody.torque.v[0]) << ", " << frf(rigidBody.torque.v[1]) << ", " << frf(rigidBody.torque.v[2]) << ")";
-	forOSS << "Force ( " << frf(rigidBody.force.v[0]) << ", " << frf(rigidBody.force.v[1]) << ", " << frf(rigidBody.force.v[2]) << ")";
+	oss[9] << "Velocity ( " << fixed << setprecision(3) << rigidBody.velocity.v[0] << ", " << rigidBody.velocity.v[1] << ", " << rigidBody.velocity.v[2] << ")";
+	oss[10] << "Angular Velocity ( " << frf(rigidBody.angularVelocity.v[0]) << ", " << frf(rigidBody.angularVelocity.v[1]) << ", " << frf(rigidBody.angularVelocity.v[2]) << ")";
+	oss[11] << "Torque ( " << frf(rigidBody.torque.v[0]) << ", " << frf(rigidBody.torque.v[1]) << ", " << frf(rigidBody.torque.v[2]) << ")";
+	oss[12] << "Force ( " << frf(rigidBody.force.v[0]) << ", " << frf(rigidBody.force.v[1]) << ", " << frf(rigidBody.force.v[2]) << ")";
 	
-	mass = massOSS.str();
-	ibody = ibodyOSS.str();
-	ibodyI = ibodyIOSS.str();
-	pos = posOSS.str();
-	orient = orientOSS.str();
-	linMom = linMomOSS.str();
-	angMom = angMomOSS.str();
-	iInv = iInvOSS.str();
-	rot = rotOSS.str();
-	vel = velOSS.str();
-	angVel = angVelOSS.str();
-	tor = torOSS.str();
-	force = forOSS.str();
-	
-	update_text(stringIDs[0], mass.c_str());
-	update_text(stringIDs[1], ibody.c_str());
-	update_text(stringIDs[2], ibodyI.c_str());
-	update_text(stringIDs[3], pos.c_str());
-	update_text(stringIDs[4], orient.c_str());
-	update_text(stringIDs[5], linMom.c_str());
-	update_text(stringIDs[6], angMom.c_str());
-	update_text(stringIDs[7], iInv.c_str());
-	update_text(stringIDs[8], rot.c_str());
-	update_text(stringIDs[9], vel.c_str());
-	update_text(stringIDs[10], angVel.c_str());
-	update_text(stringIDs[11], tor.c_str());
-	update_text(stringIDs[12], force.c_str());
+	for (int i = 0; i < 13; i++)
+	{
+		strings[i] = oss[i].str();
+		update_text(stringIDs[i], strings[i].c_str());
+	}
 
 	draw_texts();
 }
@@ -160,113 +133,11 @@ void display()
 
 	skyboxMesh.drawSkybox(view, projection);
 
-	mat4 objectModel = identity_mat4();
-	objectModel = rigidBody.rotation * objectModel;
-	objectModel = translate(objectModel, rigidBody.position);
-
-	objectMesh.drawMesh(view, projection, objectModel);
+	rigidBody.drawMesh(view, projection);
 
 	draw_text();
 	
 	glutSwapBuffers();
-}
-
-void computeForcesAndTorque()
-{
-	// Clear Forces
-	rigidBody.force = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-	rigidBody.torque = vec4(0.0f, 0.0f, 0.0f, 0.0f);
-
-	rigidBody.force += vec4(-1.0f, 0.0f, 0.0f, 0.0f);
-
-	vec4 torqueVec = vec4(1.0f, 0.0f, 0.0f, 0.0f) - rigidBody.position;
-
-	float cosAngle = dot(vec3(torqueVec.v[0], torqueVec.v[1], torqueVec.v[2]), vec3(rigidBody.force.v[0], rigidBody.force.v[1], rigidBody.force.v[2])) / (vec4Magnitude(torqueVec) * vec4Magnitude(rigidBody.force));
-	cout << "cosAngle: " << cosAngle << endl;
-	float angle = acos(cosAngle);
-	cout << "Angle: " << angle << endl;
-	cout << "sinAngle: " << sin(angle) << endl;
-	rigidBody.torque = getTorque(rigidBody.force, rigidBody.position, vec4(1.0f, 1.0f, 0.0f, 0.0f));
-
-	/*rigidBody.force += gravity * 0.1f * rigidBody.mass;
-	cout << "Force: " << rigidBody.force.v[0] << ", " << rigidBody.force.v[1] << ", " << rigidBody.force.v[2] << endl;
-	vec4 stringVec = rigidBody.position - fulcrum;
-	cout << "String Vector: " << stringVec.v[0] << ", " << stringVec.v[1] << ", " << stringVec.v[2] << endl;
-	float cosAngle = dot(vec3(stringVec.v[0], stringVec.v[1], stringVec.v[2]), vec3(gravity.v[0], gravity.v[1], gravity.v[2])) / (vec4Magnitude(stringVec) * vec4Magnitude(gravity));
-	cout << "Angle: " << cosAngle << endl;
-	float angle = 1 / cos(cosAngle);
-	rigidBody.force += (stringVec/vec4Magnitude(stringVec)) * gravity.v[1] * 0.1f * cosAngle * rigidBody.mass;
-	//rigidBody.force += gravity * 0.1f * sin(angle) * rigidBody.mass;
-	cout << "Force: " << rigidBody.force.v[0] << ", " << rigidBody.force.v[1] << ", " << rigidBody.force.v[2] << endl;
-	cout << "----------" << endl;*/
-
-	/*if (keys['r'])
-	{
-		rigidBody.force = vec4(0.0f, 0.0f, 1.0f, 0.0f);
-	}
-
-	// Add an orbiting force around 0, 0, 0
-	vec4 orbitDirection = rigidBody.position * -1;
-	float mag = vec4Magnitude(rigidBody.position);
-	
-	float gF = 6.674 * (10 ^ -11);
-	float orbitMass = 1000000.0f;
-	float orbitMagnitude = 0.0f;
-	if (mag > 0)
-	{
-		//orbitDirection = orbitDirection / mag;
-		orbitMagnitude = (gF * rigidBody.mass * orbitMass) / (mag * mag);
-	}
-	vec4 orbitForce = orbitDirection / 100;// *orbitMagnitude;
-
-	rigidBody.force += orbitForce;*/
-}
-
-void updateRigidBody()
-{
-	// Might change this to user input
-	//computeForcesAndTorque();
-
-	//vec3 xdot = rigidBody.velocity;
-	rigidBody.position += rigidBody.velocity * deltaTime;
-
-	versor omega;
-	omega.q[0] = 0.0f;
-	omega.q[1] = rigidBody.angularVelocity.v[0];
-	omega.q[2] = rigidBody.angularVelocity.v[1];
-	omega.q[3] = rigidBody.angularVelocity.v[2];
-
-	versor angularVelocityQuat;
-	float avMag = quatMagnitude(omega);
-	angularVelocityQuat.q[0] = cos((avMag * deltaTime) / 2);
-	if (avMag > 0)
-	{
-		angularVelocityQuat.q[1] = (rigidBody.angularVelocity.v[0] / avMag) * sin((avMag * deltaTime) / 2);
-		angularVelocityQuat.q[2] = (rigidBody.angularVelocity.v[1] / avMag) * sin((avMag * deltaTime) / 2);
-		angularVelocityQuat.q[3] = (rigidBody.angularVelocity.v[2] / avMag) * sin((avMag * deltaTime) / 2);
-	}
-	else
-	{
-		angularVelocityQuat.q[1] = 0.0f;
-		angularVelocityQuat.q[2] = 0.0f;
-		angularVelocityQuat.q[3] = 0.0f;
-	}
-
-	multiplyQuat(rigidBody.orientation, angularVelocityQuat, rigidBody.orientation);
-
-	rigidBody.linearMomentum += rigidBody.force * deltaTime;
-	rigidBody.angularMomentum += rigidBody.torque * deltaTime;
-
-	rigidBody.velocity = rigidBody.linearMomentum / rigidBody.mass;
-	rigidBody.rotation = quat_to_mat4(normalise(rigidBody.orientation));
-	rigidBody.Iinv = rigidBody.rotation * rigidBody.IbodyInv * transpose(rigidBody.rotation);
-	rigidBody.angularVelocity = rigidBody.Iinv * rigidBody.angularMomentum;
-
-	// Update all world points
-	for (int i = 0; i < rigidBody.numPoints; i++)
-	{
-		rigidBody.worldVertices[i] = (rigidBody.rotation * rigidBody.worldVertices[i]) + rigidBody.position;
-	}
 }
 
 void processInput()
@@ -286,7 +157,7 @@ void processInput()
 void updateScene()
 {
 	processInput();
-	updateRigidBody();
+	updateRigidBody(rigidBody);
 	// Draw the next frame
 	glutPostRedisplay();
 }
@@ -313,7 +184,7 @@ void init()
 	objectMesh.generateObjectBufferMesh(meshFiles[OBJECT_MESH]);
 	objectMesh.loadTexture(textureFiles[OBJECT_TEXTURE]);
 
-	rigidBody = RigidBody(objectMesh.vertex_count, objectMesh.vertex_positions);
+	rigidBody = RigidBody(objectMesh);
 }
 
 /*
@@ -435,13 +306,13 @@ void processMouse(int x, int y)
 		firstMouse = false;
 	}
 
-	GLfloat xoffset = x - lastX;
-	GLfloat yoffset = lastY - y;
+	int xoffset = x - lastX;
+	int yoffset = lastY - y;
 
 	lastX = x;
 	lastY = y;
 
-	camera.ProcessMouseMovement(xoffset, yoffset);
+	//camera.ProcessMouseMovement((GLfloat)xoffset, (GLfloat)yoffset);
 }
 
 void mouseWheel(int button, int dir, int x, int y)
@@ -453,14 +324,14 @@ void mouseWheel(int button, int dir, int x, int y)
  */
 int main(int argc, char** argv) 
 {
-	srand(time(NULL));
+	srand((unsigned int)time(NULL));
 
 	// Set up the window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 	glutInitWindowSize(screenWidth, screenHeight);
 	glutInitWindowPosition((glutGet(GLUT_SCREEN_WIDTH) - screenWidth) / 2, (glutGet(GLUT_SCREEN_HEIGHT) - screenHeight) / 4);
-	glutCreateWindow("Particle System");
+	glutCreateWindow("Rigid Body Unconstrained Motion");
 
 	// Glut display and update functions
 	glutDisplayFunc(display);

@@ -5,6 +5,9 @@
 
 #include "Antons_maths_funcs.h"
 
+GLfloat deltaTime = 1.0f / 60.0f;
+
+#pragma region RIGIDBODY_CLASS
 class RigidBody {
 public:
 	// Constants
@@ -12,6 +15,7 @@ public:
 	mat4 Ibody;
 	mat4 IbodyInv;
 	vec4 bodyCOM;
+	vec4 worldCOM;
 
 	// State Variables
 	vec4 position;			// x(t)
@@ -19,13 +23,13 @@ public:
 	vec4 linearMomentum;	// P(t)
 	vec4 angularMomentum;	// L(t)
 
-	// Derived Quantities
+							// Derived Quantities
 	mat4 Iinv;				// I-1(t) = R(t) * IbodyInv * R(t)T
 	mat4 rotation;			// Rotation Matrix R(t)
 	vec4 velocity;			// v(t)  = P(t) / mass
 	vec4 angularVelocity;	// w(t)  = I-1(t) * L(t)
 
-	// Computed Quantities
+							// Computed Quantities
 	vec4 torque;			// T(t)
 	vec4 force;				// F(t)
 
@@ -33,17 +37,29 @@ public:
 	GLuint numTriangles;
 	GLuint numPoints;
 	vector<vec4> bodyVertices;
+	vector<vec4> initialWorldVertices;
 	vector<vec4> worldVertices;
 
+	Mesh rigidBodyMesh;
+
+	vec4 bodyCentroid;
+	vec4 worldCentroid;
+
+	GLfloat scaleFactor;
+
 	RigidBody();
+	RigidBody(Mesh rigidBodyMesh, GLfloat scaleFactor);
 	RigidBody(int vertex_count, vector<float> vertex_positions);
-	void RigidBody::computeMassInertia(bool bodyCoords);
+	~RigidBody();
+	vec4 getCentroid();
+	void computeMassInertia(bool bodyCoords);
+	void drawMesh(mat4 view, mat4 projection);
 };
 
 RigidBody::RigidBody()
 {
 	this->mass = 1.0f;
-	
+
 	// Calculate Ibody and IbodyInv
 	// this->Ibody = 
 	// this->IbodyInv = 
@@ -64,6 +80,58 @@ RigidBody::RigidBody()
 	this->velocity = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	this->angularVelocity = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	this->Iinv = identity_mat4();
+}
+
+RigidBody::RigidBody(Mesh rigidBodyMesh, GLfloat scaleFactor = 1.0f)
+{
+	this->rigidBodyMesh = rigidBodyMesh;
+	this->scaleFactor = scaleFactor;
+	int vertex_count = rigidBodyMesh.vertex_count;
+	vector<float> vertex_positions = rigidBodyMesh.vertex_positions;
+
+	// Mesh Information
+	this->bodyVertices.clear();
+	this->initialWorldVertices.clear();
+	this->worldVertices.clear();
+
+	for (int i = 0; i < vertex_count; i++)
+	{
+		this->bodyVertices.push_back(vec4(vertex_positions[i * 3], vertex_positions[1 + i * 3], vertex_positions[2 + i * 3], 0.0f) * scaleFactor);
+		this->initialWorldVertices.push_back(vec4(vertex_positions[i * 3], vertex_positions[1 + i * 3], vertex_positions[2 + i * 3], 0.0f) * scaleFactor);
+	}
+
+	sort(this->initialWorldVertices.begin(), this->initialWorldVertices.end());
+	this->initialWorldVertices.erase(unique(this->initialWorldVertices.begin(), this->initialWorldVertices.end()), this->initialWorldVertices.end());
+	this->numPoints = this->initialWorldVertices.size();
+	this->worldVertices = this->initialWorldVertices;
+
+	this->numTriangles = vertex_count / 3;
+
+	// Constants
+	computeMassInertia(false);
+	this->IbodyInv = inverse(this->Ibody);
+
+	// State Variables
+	this->worldCOM = this->bodyCOM;
+	this->position = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	this->orientation.q[0] = 0.0f;
+	this->orientation.q[1] = 0.0f;
+	this->orientation.q[2] = 1.0f;
+	this->orientation.q[3] = 0.0f;
+	this->linearMomentum = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	this->angularMomentum = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+	// Derived Quantities
+	this->rotation = quat_to_mat4(this->orientation);
+	this->Iinv = this->rotation * this->IbodyInv * transpose(this->rotation);
+	this->velocity = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	this->angularVelocity = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+	// Computed Quantities
+	this->torque = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	this->force = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+	this->bodyCentroid = getCentroid();
 }
 
 RigidBody::RigidBody(int vertex_count, vector<float> vertex_positions)
@@ -89,6 +157,7 @@ RigidBody::RigidBody(int vertex_count, vector<float> vertex_positions)
 	this->IbodyInv = inverse(this->Ibody);
 
 	// State Variables
+	this->worldCOM = this->bodyCOM;
 	this->position = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	this->orientation.q[0] = 0.0f;
 	this->orientation.q[1] = 0.0f;
@@ -103,9 +172,24 @@ RigidBody::RigidBody(int vertex_count, vector<float> vertex_positions)
 	this->velocity = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	this->angularVelocity = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 
-	// Computer Quantities
+	// Computed Quantities
 	this->torque = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	this->force = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+	this->bodyCentroid = getCentroid();
+}
+
+RigidBody::~RigidBody()
+{}
+
+vec4 RigidBody::getCentroid()
+{
+	vec4 sum = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	for (GLuint i = 0; i < this->numPoints; i++)
+	{
+		sum += this->worldVertices[i];
+	}
+	return sum / (float)this->numPoints;
 }
 
 // Adapted from:
@@ -118,68 +202,19 @@ RigidBody::RigidBody(int vertex_count, vector<float> vertex_positions)
 
 void RigidBody::computeMassInertia(bool bodyCoords)
 {
-	/*GLfloat testVertices[] =
-	{
-		// Positions          
-		-1.0f,  1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-
-		-1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,
-
-		1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-
-		-1.0f, -1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,
-
-		-1.0f,  1.0f, -1.0f,
-		1.0f,  1.0f, -1.0f,
-		1.0f,  1.0f,  1.0f,
-		1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f, -1.0f,
-
-		-1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,
-		1.0f, -1.0f, -1.0f,
-		1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,
-		1.0f, -1.0f,  1.0f
-	};*/
-
 	float oneDiv6 = (1.0f / 6.0f);
 	float oneDiv24 = (1.0f / 24.0f);
-	float oneDiv60 = (1.0 / 60.0);
-	float oneDiv120 = (1.0 / 120.0);
+	float oneDiv60 = (1.0f / 60.0f);
+	float oneDiv120 = (1.0f / 120.0f);
 
 	// order:  1, x, y, z, x^2, y^2, z^2, xy, yz, zx
 	float integral[10] = { 0.0f, 0.0f, 0.0f, 0.0f,
 		0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 
 	int index = 0;
-	for (int i = 0; i < numTriangles; ++i)
+	for (GLuint i = 0; i < numTriangles; ++i)
 	{
 		// Get vertices of triangle i.
-		//vec3 v0 = vec3(testVertices[index++], testVertices[index++], testVertices[index++]);
-		//vec3 v1 = vec3(testVertices[index++], testVertices[index++], testVertices[index++]);
-		//vec3 v2 = vec3(testVertices[index++], testVertices[index++], testVertices[index++]);
 		vec3 v0 = bodyVertices[index++];
 		vec3 v1 = bodyVertices[index++];
 		vec3 v2 = bodyVertices[index++];
@@ -300,54 +335,76 @@ void RigidBody::computeMassInertia(bool bodyCoords)
 	}
 }
 
-
-void multiplyQuat(versor &result, versor r, versor s)
+void RigidBody::drawMesh(mat4 view, mat4 projection)
 {
-	result.q[0] = s.q[0] * r.q[0] - s.q[1] * r.q[1] -
-		s.q[2] * r.q[2] - s.q[3] * r.q[3];
-	result.q[1] = s.q[0] * r.q[1] + s.q[1] * r.q[0] -
-		s.q[2] * r.q[3] + s.q[3] * r.q[2];
-	result.q[2] = s.q[0] * r.q[2] + s.q[1] * r.q[3] +
-		s.q[2] * r.q[0] - s.q[3] * r.q[1];
-	result.q[3] = s.q[0] * r.q[3] - s.q[1] * r.q[2] +
-		s.q[2] * r.q[1] + s.q[3] * r.q[0];
-	normalise(result); // Re-normalise
+	mat4 objectModel = scale(identity_mat4(), vec3(this->scaleFactor, this->scaleFactor, this->scaleFactor));
+	objectModel = this->rotation * objectModel;
+	objectModel = translate(objectModel, this->position);
+	rigidBodyMesh.drawMesh(view, projection, objectModel);
 }
+#pragma endregion
 
-float quatMagnitude(versor v)
-{
-	float sum = v.q[0] * v.q[0] + v.q[1] * v.q[1] + v.q[2] * v.q[2] + v.q[3] * v.q[3];
-	float result = sqrt(sum);
-	return result;
-}
-
-float vec4Magnitude(vec4 v)
-{
-	float sum = v.v[0] * v.v[0] + v.v[1] * v.v[1] + v.v[2] * v.v[2] + v.v[3] * v.v[3];
-	float result = sqrt(sum);
-	return result;
-}
-
-bool operator < (const vec4 &lhs, const vec4 &rhs) {
-	if (lhs.v[0] < rhs.v[0]) return true;
-	if (lhs.v[0] > rhs.v[0]) return false;
-	if (lhs.v[1] < rhs.v[1]) return true;
-	if (lhs.v[1] > rhs.v[1]) return false;
-	return (lhs.v[2] < rhs.v[2]);
-}
-
-bool operator == (const vec4 &lhs, const vec4 &rhs) {
-	return (lhs.v[0] == rhs.v[0]) && (lhs.v[1] == rhs.v[1]) && (lhs.v[2] == rhs.v[2]);
-}
-
+#pragma region RIGIDBODY_UPDATE
 vec4 getTorque(vec4 force, vec4 position, vec4 point)
 {
 	vec4 pointToCOM = point - position;
-
-	//float cosAngle = dot(vec3(pointToCOM.v[0], pointToCOM.v[1], pointToCOM.v[2]), vec3(force.v[0], force.v[1], force.v[2])) / (vec4Magnitude(pointToCOM) * vec4Magnitude(force));
-	//cout << "cosAngle: " << cosAngle << endl;
-	//float angle = acos(cosAngle);
-	//cout << "Angle: " << angle << endl;
-	//cout << "sinAngle: " << sin(angle) << endl;
-	return cross(pointToCOM, force); // force * vec4Magnitude(pointToCOM) * sin(angle);
+	return cross(pointToCOM, force);
 }
+
+void computeForcesAndTorque(RigidBody &rigidBody)
+{
+	// Clear Forces
+	rigidBody.force = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	rigidBody.torque = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+	// Apply Forces
+}
+
+void updateRigidBody(RigidBody &rigidBody)
+{
+	//computeForcesAndTorque();
+
+	rigidBody.position += rigidBody.velocity * deltaTime;
+
+	versor omega;
+	omega.q[0] = 0.0f;
+	omega.q[1] = rigidBody.angularVelocity.v[0];
+	omega.q[2] = rigidBody.angularVelocity.v[1];
+	omega.q[3] = rigidBody.angularVelocity.v[2];
+
+	versor angularVelocityQuat;
+	float avMag = quatMagnitude(omega);
+	angularVelocityQuat.q[0] = cos((avMag * deltaTime) / 2);
+	if (avMag > 0)
+	{
+		angularVelocityQuat.q[1] = (rigidBody.angularVelocity.v[0] / avMag) * sin((avMag * deltaTime) / 2);
+		angularVelocityQuat.q[2] = (rigidBody.angularVelocity.v[1] / avMag) * sin((avMag * deltaTime) / 2);
+		angularVelocityQuat.q[3] = (rigidBody.angularVelocity.v[2] / avMag) * sin((avMag * deltaTime) / 2);
+	}
+	else
+	{
+		angularVelocityQuat.q[1] = 0.0f;
+		angularVelocityQuat.q[2] = 0.0f;
+		angularVelocityQuat.q[3] = 0.0f;
+	}
+
+	multiplyQuat(rigidBody.orientation, angularVelocityQuat, rigidBody.orientation);
+
+	rigidBody.linearMomentum += rigidBody.force * deltaTime;
+	rigidBody.angularMomentum += rigidBody.torque * deltaTime;
+
+	rigidBody.velocity = rigidBody.linearMomentum / rigidBody.mass;
+	rigidBody.rotation = quat_to_mat4(normalise(rigidBody.orientation));
+	rigidBody.Iinv = rigidBody.rotation * rigidBody.IbodyInv * transpose(rigidBody.rotation);
+	rigidBody.angularVelocity = rigidBody.Iinv * rigidBody.angularMomentum;
+
+	// Update all world points
+	for (GLuint i = 0; i < rigidBody.numPoints; i++)
+	{
+		rigidBody.worldVertices[i] = (rigidBody.rotation * rigidBody.worldVertices[i]) + rigidBody.position;
+	}
+
+	rigidBody.worldCOM = (rigidBody.rotation * rigidBody.bodyCOM) + rigidBody.position;
+	rigidBody.worldCentroid = (rigidBody.rotation * rigidBody.bodyCentroid) + rigidBody.position;
+}
+#pragma endregion

@@ -38,12 +38,12 @@ struct Renderable_Text {
 
 //
 // call before main loop to load shaders and stuff
-bool init_text_rendering (
+bool init_text_rendering(
 	const char* font_image_file,
 	const char* font_meta_data_file,
 	int viewport_width,
 	int viewport_height
-);
+	);
 
 //
 // add a string of text to render on-screen
@@ -52,7 +52,7 @@ bool init_text_rendering (
 // x,y are position of the bottom-left of the first character in clip space
 // size_is_px is the size of maximum-sized glyph in pixels on screen
 // r, g, b, a is the colour of the text string
-int add_text (
+int add_text(
 	const char* str,
 	float x,
 	float y,
@@ -61,23 +61,23 @@ int add_text (
 	float g,
 	float b,
 	float a
-);
+	);
 
 //
 // x,y are position of the bottom-left of the first character in clip space
-void move_text (int id, float x, float y);
-void centre_text (int id, float x, float y);
+void move_text(int id, float x, float y);
+void centre_text(int id, float x, float y);
 
 //
 // change text string in any previously added text
-bool update_text (int id, const char* str);
+bool update_text(int id, const char* str);
 
 //
 // change colour of any previously added text
-bool change_text_colour (int id, float r, float g, float b, float a);
+bool change_text_colour(int id, float r, float g, float b, float a);
 
 //
 // draw all the texts to screen
-void draw_texts ();
+void draw_texts();
 
 #endif
